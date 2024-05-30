@@ -2,6 +2,6 @@
 2,Eraser,5,95
 3,Sharpner,5,100
 4,Pen,10,100
-5,Ruler,10,75
+5,Ruler,10,68
 6,Chart Papers,5,150
 7,Notebooks,20,100
