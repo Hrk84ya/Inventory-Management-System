@@ -1,5 +1,5 @@
-1,Pencil,2,95
-2,Eraser,5,100
+1,Pencil,2,90
+2,Eraser,5,95
 3,Sharpner,5,100
 4,Pen,10,100
 5,Ruler,10,75

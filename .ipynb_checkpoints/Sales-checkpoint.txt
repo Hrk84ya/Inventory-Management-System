@@ -1,0 +1,2 @@
+Mia,8765675678,mia@gmail.com,Pencil,1,5,10,Thu May 30 09:26:36 2024
+Harsh,8796787654,harsh@yahoo.com,Eraser,2,5,25,Thu May 30 09:27:00 2024
