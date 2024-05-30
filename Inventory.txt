@@ -1,4 +1,4 @@
-1,Pencil,2,100
+1,Pencil,2,95
 2,Eraser,5,100
 3,Sharpner,5,100
 4,Pen,10,100
