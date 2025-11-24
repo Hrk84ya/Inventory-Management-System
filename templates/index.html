@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4">Inventory Management System</h1>
+        <p class="lead">Professional inventory tracking and sales management</p>
+        
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Get Started</a>
+        {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        {% endif %}
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <h3>📦 Inventory Tracking</h3>
+                <p>Real-time stock monitoring with low stock alerts</p>
+            </div>
+            <div class="col-md-4">
+                <h3>💰 Sales Management</h3>
+                <p>Complete transaction history and reporting</p>
+            </div>
+            <div class="col-md-4">
+                <h3>🔒 Secure Access</h3>
+                <p>User authentication and role-based permissions</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
