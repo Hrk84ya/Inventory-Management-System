@@ -104,6 +104,3 @@ pytest --cov=. tests/
    ```
 3. Put behind a reverse proxy (nginx) with SSL
 
-## License
-
-MIT
