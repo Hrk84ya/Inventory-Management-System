@@ -1,78 +1,125 @@
 {% extends "base.html" %}
 
+{% block page_header %}
+<h1>Dashboard</h1>
+<p>Overview of your inventory and recent activity</p>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h2>Dashboard</h2>
-        
-        {% if low_stock %}
-        <div class="alert alert-warning">
-            <strong>Low Stock Alert:</strong> {{ low_stock|length }} items need restocking
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon primary"><i class="bi bi-box-seam"></i></div>
+            <div class="stat-value">{{ products|length }}</div>
+            <div class="stat-label">Total Products</div>
         </div>
-        {% endif %}
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon success"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value">{{ products|selectattr('quantity', 'gt', 10)|list|length }}</div>
+            <div class="stat-label">In Stock</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon warning"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="stat-value">{{ low_stock|length }}</div>
+            <div class="stat-label">Low Stock</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon danger"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-value">{{ products|selectattr('quantity', 'eq', 0)|list|length }}</div>
+            <div class="stat-label">Out of Stock</div>
+        </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
+{% if low_stock %}
+<div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <span>{{ low_stock|length }} product{{ 's' if low_stock|length > 1 }} running low on stock and may need restocking soon.</span>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Products Table -->
+    <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
-                <h4>Products</h4>
+                <h4><i class="bi bi-box-seam me-2"></i>Products</h4>
+                <span class="category-badge">{{ products|length }} items</span>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Category</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
-                            <tr class="{% if product.is_low_stock() %}table-warning{% endif %}">
-                                <td>{{ product.id }}</td>
-                                <td>{{ product.name }}</td>
-                                <td>${{ "%.2f"|format(product.price) }}</td>
-                                <td>{{ product.quantity }}</td>
-                                <td>{{ product.category or 'N/A' }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary" data-product-id="{{ product.id }}" onclick="purchaseProduct(this.dataset.productId)">
-                                        Buy
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Category</th>
+                            <th style="width: 80px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                <div class="product-name">{{ product.name }}</div>
+                                {% if product.description %}
+                                <div class="product-desc">{{ product.description }}</div>
+                                {% endif %}
+                            </td>
+                            <td>${{ "%.2f"|format(product.price) }}</td>
+                            <td>
+                                {% if product.quantity == 0 %}
+                                    <span class="badge-stock out-of-stock"><i class="bi bi-x-circle-fill"></i> 0</span>
+                                {% elif product.is_low_stock() %}
+                                    <span class="badge-stock low-stock"><i class="bi bi-exclamation-circle-fill"></i> {{ product.quantity }}</span>
+                                {% else %}
+                                    <span class="badge-stock in-stock"><i class="bi bi-check-circle-fill"></i> {{ product.quantity }}</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="category-badge">{{ product.category or '—' }}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" data-product-id="{{ product.id }}" onclick="purchaseProduct(this.dataset.productId)" {% if product.quantity == 0 %}disabled{% endif %}>
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
+
+    <!-- Recent Sales Sidebar -->
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
-                <h4>Recent Sales</h4>
+                <h4><i class="bi bi-receipt me-2"></i>Recent Sales</h4>
             </div>
             <div class="card-body" id="sales-history">
-                <p class="text-muted">Loading...</p>
+                <div class="empty-state">
+                    <i class="bi bi-hourglass-split"></i>
+                    <p>Loading sales...</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Purchase Modal -->
-<div class="modal fade" id="purchaseModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Make Purchase</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="purchaseModalLabel"><i class="bi bi-cart-check me-2"></i>Make a Purchase</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="purchaseForm">
@@ -83,13 +130,15 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="quantity" min="1" required>
+                        <input type="number" class="form-control" id="quantity" min="1" value="1" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="confirmPurchase()">Purchase</button>
+                <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmPurchase()">
+                    <i class="bi bi-check-lg me-1"></i>Confirm Purchase
+                </button>
             </div>
         </div>
     </div>

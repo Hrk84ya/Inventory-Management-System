@@ -1,46 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Inventory Management System{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}InvenTrack — Inventory Management{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Inventory System</a>
-            <div class="navbar-nav ms-auto">
-                {% if current_user.is_authenticated %}
-                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
-                    {% if current_user.role == 'admin' %}
-                        <a class="nav-link" href="{{ url_for('admin') }}">Admin</a>
-                    {% endif %}
-                    <a class="nav-link" href="{{ url_for('logout') }}">Logout ({{ current_user.username }})</a>
-                {% else %}
-                    <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+<body class="{% if current_user.is_authenticated %}layout-app{% else %}layout-public{% endif %}">
 
-    <div class="container mt-4">
+    {% if current_user.is_authenticated %}
+    <div class="app-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="bi bi-box-seam-fill"></i>
+                <span>InvenTrack</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin') }}" class="sidebar-link {% if request.endpoint == 'admin' %}active{% endif %}">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Admin Panel</span>
+                </a>
+                {% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">
+                        {{ current_user.username[0]|upper }}
+                    </div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name">{{ current_user.username }}</span>
+                        <span class="sidebar-user-role">{{ current_user.role|capitalize }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="sidebar-link logout-link">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <button class="sidebar-toggle d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="header-title">
+                    {% block page_header %}{% endblock %}
+                </div>
+                <div class="header-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </header>
+
+            <div class="main-body">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% else %}
+    <div class="public-wrapper">
+        <nav class="public-nav">
+            <div class="container">
+                <a href="{{ url_for('index') }}" class="public-brand">
+                    <i class="bi bi-box-seam-fill"></i>
+                    InvenTrack
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm px-4">Sign In</a>
+            </div>
+        </nav>
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
+                <div class="container mt-3">
                 {% for message in messages %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
 
-        {% block content %}{% endblock %}
+        {% block public_content %}{% endblock %}
     </div>
+    {% endif %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Toast container for notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
