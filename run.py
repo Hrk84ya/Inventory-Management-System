@@ -16,7 +16,7 @@ def main():
         print("Starting Inventory Management System...")
         print("Web interface: http://localhost:5000")
         print("Login with: admin / admin123")
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=True, host='0.0.0.0', port=8000)
 
 if __name__ == '__main__':
     main()
